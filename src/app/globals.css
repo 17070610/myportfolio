@@ -1,0 +1,316 @@
+@import "tailwindcss";
+
+/*
+  Glass design system.
+
+  Glassmorphism only reads if there is something behind the glass, so the page
+  sits on a deep base with soft colour fields; panels blur what is underneath.
+  Effects are tuned for restraint: one accent, consistent blur and elevation,
+  and a single hover response reused everywhere.
+*/
+@theme {
+  --color-bg: #f4f6f8;
+  --color-bg-deep: #e8ecf1;
+  --color-text: #14181d;
+  --color-muted: #5d6874;
+  --color-accent: #16705c;
+  --color-accent-hover: #0f5645;
+  --color-accent-tint: 22 112 92;
+
+  /* Glass surface: translucent fill + hairline highlight. */
+  --glass-fill: rgba(255, 255, 255, 0.58);
+  --glass-fill-strong: rgba(255, 255, 255, 0.76);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-edge: rgba(20, 24, 29, 0.07);
+  --glass-blur: 18px;
+  /* Nav sits over scrolling content, so it blurs harder than a panel. */
+  --glass-blur-nav: 32px;
+
+  --shadow-rest: 0 1px 2px rgba(20, 24, 29, 0.04),
+    0 8px 24px -12px rgba(20, 24, 29, 0.16);
+  --shadow-lift: 0 2px 4px rgba(20, 24, 29, 0.05),
+    0 20px 44px -16px rgba(20, 24, 29, 0.26);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+
+  --radius-card: 16px;
+  --radius-chip: 8px;
+
+  /* 1.25 type scale */
+  --text-xs: 0.8rem;
+  --text-sm: 0.9rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.33rem;
+  --text-xl: 1.66rem;
+  --text-2xl: 2.08rem;
+  --text-3xl: 2.6rem;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+  Dark palette. This must be a plain :root rule, not a nested @theme — Tailwind
+  v4 hoists @theme blocks out of their media query, so a nested one would
+  overwrite the light palette globally rather than applying only in dark mode.
+*/
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0c1014;
+    --color-bg-deep: #070a0d;
+    --color-text: #e9edf1;
+    --color-muted: #97a3b0;
+    --color-accent: #5bd0ae;
+    --color-accent-hover: #7fdcc1;
+    --color-accent-tint: 91 208 174;
+
+    --glass-fill: rgba(255, 255, 255, 0.055);
+    --glass-fill-strong: rgba(255, 255, 255, 0.085);
+    --glass-border: rgba(255, 255, 255, 0.11);
+    --glass-edge: rgba(0, 0, 0, 0.4);
+
+    --shadow-rest: 0 1px 2px rgba(0, 0, 0, 0.3),
+      0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.35),
+      0 20px 44px -16px rgba(0, 0, 0, 0.65);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  Static colour fields behind the glass. Fixed and non-animated: they give the
+  blur something to work with without drawing attention to themselves.
+*/
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      52rem 40rem at 12% -8%,
+      rgb(var(--color-accent-tint) / 0.16),
+      transparent 60%
+    ),
+    radial-gradient(
+      44rem 34rem at 92% 4%,
+      rgb(var(--color-accent-tint) / 0.09),
+      transparent 62%
+    ),
+    radial-gradient(
+      60rem 46rem at 68% 96%,
+      rgb(var(--color-accent-tint) / 0.11),
+      transparent 64%
+    ),
+    linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-deep) 100%);
+}
+
+/* Fine grain stops the large colour fields from banding. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- Glass primitives ---------------------------------------------------- */
+
+.glass {
+  background: var(--glass-fill);
+  backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    var(--shadow-rest),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass {
+    box-shadow:
+      var(--shadow-rest),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+}
+
+.glass-strong {
+  background: var(--glass-fill-strong);
+}
+
+/*
+  Heavier blur for the sticky nav: content scrolls directly beneath it, so it
+  needs to obscure more than a static panel does.
+*/
+.glass-nav {
+  backdrop-filter: blur(var(--glass-blur-nav)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-nav)) saturate(180%);
+}
+
+/*
+  One hover response, reused: lift, a restrained scale, a warmer glass fill,
+  and an accent-tinted glow. Transform is GPU-cheap; nothing reflows.
+*/
+.card-hover {
+  transition:
+    transform 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out),
+    border-color 280ms var(--ease-out),
+    background-color 280ms var(--ease-out);
+  will-change: transform;
+}
+
+@media (hover: hover) {
+  .card-hover:hover {
+    transform: translateY(-6px) scale(1.012);
+    background: var(--glass-fill-strong);
+    border-color: rgb(var(--color-accent-tint) / 0.45);
+    box-shadow:
+      var(--shadow-lift),
+      0 0 0 1px rgb(var(--color-accent-tint) / 0.12),
+      0 18px 50px -20px rgb(var(--color-accent-tint) / 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+}
+
+.card-hover:focus-within {
+  transform: translateY(-6px) scale(1.012);
+  border-color: rgb(var(--color-accent-tint) / 0.45);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Sheen that sweeps once on hover. Purely decorative. */
+.sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.26) 50%,
+    transparent 62%
+  );
+  transform: translateX(-100%);
+  transition: transform 720ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .sheen:hover::after {
+    transform: translateX(100%);
+  }
+}
+
+/* Accent-lit top hairline, revealed on hover. */
+.edge-lit::before {
+  content: "";
+  position: absolute;
+  inset-inline: 12%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--color-accent-tint) / 0.85),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 280ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .card-hover:hover .edge-lit::before,
+  .edge-lit:hover::before {
+    opacity: 1;
+  }
+}
+
+.measure {
+  max-width: 68ch;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ---- Entrance ------------------------------------------------------------ */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 420ms var(--ease-out) both;
+}
+
+.rise-1 { animation-delay: 60ms; }
+.rise-2 { animation-delay: 120ms; }
+.rise-3 { animation-delay: 180ms; }
+
+/*
+  Reduced motion: no transforms, no sweep, no entrance animation. Glass and
+  colour stay, since neither moves.
+*/
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .card-hover:hover,
+  .card-hover:focus-within {
+    transform: none;
+  }
+  .sheen::after {
+    display: none;
+  }
+}
+
+/*
+  Fallback for browsers without backdrop-filter: opaque panels instead of
+  translucent ones, so text never loses contrast.
+*/
+@supports not (backdrop-filter: blur(1px)) {
+  .glass {
+    background: var(--color-bg);
+  }
+  .glass-strong {
+    background: var(--color-bg);
+  }
+}
