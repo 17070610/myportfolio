@@ -121,7 +121,7 @@ export const projects: Project[] = [
     ],
     image: "/projects/mwalimu-online.webp",
     imageAlt:
-      "The Mwalimu Online home page: \u201cEducation for All. Anytime. Anywhere.\u201d with navigation for Courses, Past Papers, Testing Hub and Live Sessions.",
+      "The Mwalimu Online home page: \u201cEducation for All. Anytime. Anywhere.\u201d with navigation for Courses, Past Paper, Testing Hub, Live Sessions and Service Hub.",
     caseStudy: {
       problem:
         "Rwandan learners preparing for national exams need lessons and past papers in one reliable place, reachable on the devices and connections they actually have.",
@@ -173,10 +173,13 @@ export const services = [
 // Audited per the spec: no HTML/CSS as "languages", no Canva, databases grouped
 // correctly, nothing listed that can't be discussed in an interview.
 export const stack = [
-  { group: "Languages", items: ["TypeScript", "JavaScript", "Python", "SQL"] },
+  {
+    group: "Languages",
+    items: ["TypeScript", "JavaScript", "Java", "Python", "SQL"],
+  },
   {
     group: "Frameworks & libraries",
-    items: ["Next.js", "React", "Node.js", "Express"],
+    items: ["Next.js", "React", "Node.js", "Express", "Spring Boot"],
   },
   {
     group: "Databases & data",
@@ -190,7 +193,7 @@ export const stack = [
     group: "DevOps & deployment",
     items: ["Linux", "VPS hosting", "Nginx", "PM2", "Database administration"],
   },
-  { group: "Tools", items: ["Git", "Postman", "DataGrip", "Figma"] },
+  { group: "Tools", items: ["Git", "Postman", "JetBrains IDEs", "Figma"] },
 ];
 
 export const education = [
